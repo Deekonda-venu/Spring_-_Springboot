@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         version="5.0">
+
+    <!-- Application name -->
+    <display-name>MyWebApplication</display-name>
+
+    <!-- Servlet declaration -->
+    <servlet>
+        <servlet-name>students</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+    </servlet>
+
+    <!-- Servlet URL mapping -->
+    <servlet-mapping>
+        <servlet-name>students</servlet-name>
+        <url-pattern>/</url-pattern>
+    </servlet-mapping>
+
+    <welcome-file-list>
+        <welcome-file>login.jsp</welcome-file>
+    </welcome-file-list>
+
+
+
+</web-app>
