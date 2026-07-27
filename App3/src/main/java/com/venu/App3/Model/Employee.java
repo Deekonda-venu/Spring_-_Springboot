@@ -39,6 +39,9 @@ public class Employee{
         Esal = esal;
     }
 
+    public Employee(int eid) {
+        Eid = eid;
+    }
 
 
     public Employee(@JsonProperty("eid") int eid,
