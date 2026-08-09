@@ -6,6 +6,7 @@ import lombok.Data;
 public class AddressRespose {
 
     Long id;
+    Long employeeId;
     String street;
     String city;
     String state;

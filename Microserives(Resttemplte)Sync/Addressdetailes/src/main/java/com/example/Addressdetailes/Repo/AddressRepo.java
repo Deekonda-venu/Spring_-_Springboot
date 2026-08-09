@@ -11,6 +11,6 @@ import java.util.Optional;
 @Repository
 public interface AddressRepo extends JpaRepository<Addressdetails, Long> {
 
-    @Query(nativeQuery = true, value = "select * from address_table join employee_table on address_table.employee_id = employee_table.id where employee_table.id = :employeeid")
+    @Query(nativeQuery = true, value = "select a.id, a.employee_id, a.street, a.city, a.state, a.zip_code from address_table a join employedetailes e on a.employee_id = e.id where e.id = :employeeid")
     Optional<Addressdetails> findaddressbyemplyeeid(@Param("employeeid") Long employeeid);
 }
