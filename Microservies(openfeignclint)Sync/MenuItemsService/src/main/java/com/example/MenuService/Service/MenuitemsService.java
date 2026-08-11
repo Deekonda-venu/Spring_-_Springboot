@@ -90,4 +90,14 @@ public class MenuitemsService {
         if (menuitem.getResturantId() != null) menuitems.setResturantId(menuitem.getResturantId());
         return menuitemsRepo.save(menuitems);
     }
+    public List<MenuItems> getMenuItemsByResturant(Long resturantId, String category, Boolean veg) {
+        if (category != null && veg != null) {
+            return menuitemsRepo.findByResturantIdAndCategoryAndVegNonVeg(resturantId, category, veg ? "Veg" : "NonVeg");
+        } else if (category != null) {
+            return menuitemsRepo.findByResturantIdAndCategory(resturantId, category);
+        } else if (veg != null) {
+            return menuitemsRepo.findByResturantIdAndVegNonVeg(resturantId, veg ? "Veg" : "NonVeg");
+        }
+        return menuitemsRepo.findByResturantId(resturantId);
+    }
 }
