@@ -36,7 +36,7 @@ public class ResturantController {
     @GetMapping("/GetResturnentdetailsById/{id}")
     public ResponseEntity<ResturantDetails> getResturentDetailsById(@PathVariable Long id) {
         return ResponseEntity.ok(
-                resturentservice.getResturentDetailsById(id)
+                resturentservice.getMenuItemsByResturant(id)
                         .orElseThrow(() -> new RuntimeException("Resturant not found with id: " + id))
         );
     }

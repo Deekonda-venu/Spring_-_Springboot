@@ -14,19 +14,22 @@ import java.util.List;
 @NoArgsConstructor
 public class ResturantResponse {
 
-    Long id;
-    String resturantName;
-    String description;
-    String phone;
-    String email;
-    String address;
-    String city;
-    LocalTime openingTime;
-    LocalTime closingTime;
+    private Long id;
+    private String resturantName;
+    private String description;
+    private String phone;
+    private String email;
+    private String address;
+    private String city;
+    private LocalTime openingTime;
+    private LocalTime closingTime;
 //    @Enumerated(EnumType.STRING)
-    ResturantStatus status;
-    LocalDateTime createdAt;
-    LocalDateTime updatedAt;
+    private ResturantStatus status;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
+    private List<MenuitemsResponse> menuItems;
+
 
 
 //    MenuItemsDetails menuItems;

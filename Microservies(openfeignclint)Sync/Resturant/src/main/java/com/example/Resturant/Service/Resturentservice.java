@@ -17,8 +17,8 @@ public class Resturentservice {
     @Autowired
     private ResturentRepo resturentRepo;
 
-//    @Autowired
-//    private Fooditemsrepo fooditemsrepo;
+    @Autowired
+    private MenuitemsClient menuitemsClient;
 
     public ResturantDetails saveResturentDetils(ResturantDetails resturantDetails) {
         resturantDetails.setStatus(ResturantStatus.OPEN);
@@ -31,8 +31,12 @@ public class Resturentservice {
         return resturentRepo.findAll();
     }
 
-    public Optional<ResturantDetails> getResturentDetailsById(Long id) {
-        return resturentRepo.findById(id);
+    public ResturantResponse getMenuItemsByResturant(Long Id) {
+        List<MenuitemsResponse> menuitemsResponse = menuitemsClient.getMenuItemsByResturant(Id).getBody();
+        ResturantResponse resturantResponse = new ResturantResponse();
+        resturantResponse.setResturantDetails(resturentRepo.findById(Id).orElseThrow(() -> new RuntimeException("Resturant not found with id " + Id)));
+        resturantResponse.setMenuItems(menuitemsResponse);
+        return resturantResponse;
     }
     public ResturantDetails updateResturentDetailsById(Long id, ResturantDetails resturantDetails) {
         ResturantDetails existing = resturentRepo.findById(id)
@@ -92,5 +96,8 @@ public class Resturentservice {
         return resturentRepo.save(existing);
 
     }
+
+
+
 
 }

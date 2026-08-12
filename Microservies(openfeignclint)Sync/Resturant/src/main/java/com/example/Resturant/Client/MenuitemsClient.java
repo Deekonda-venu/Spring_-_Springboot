@@ -20,4 +20,7 @@ public interface MenuitemsClient {
     @GetMapping("/GetFooditemsById/{ID}")
     public MenuitemsFullRespose getMenuitemById(@PathVariable Long ID);
 
+    @GetMapping("/GetMenuItemsByResturant/{resturantId}")
+    public List<Menuitems> getMenuItemsByResturant(@PathVariable Long resturantId);
+
 }

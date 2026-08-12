@@ -58,4 +58,8 @@ public class MenuitemsController {
             @RequestParam(required = false) Boolean veg) {
         return menuitemsService.getMenuItemsByResturant(resturantId, category, veg);
     }
+    @GetMapping("/GetMenuItemsByResturant/{resturantId}")
+    public List<MenuItems> getMenuItemsByResturant(@PathVariable Long resturantId) {
+        return menuitemsService.getMenuItemsByResturant(resturantId);
+    }
 }
