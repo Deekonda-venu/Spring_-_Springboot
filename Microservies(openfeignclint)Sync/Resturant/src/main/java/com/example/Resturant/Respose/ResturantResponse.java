@@ -28,7 +28,7 @@ public class ResturantResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    private List<MenuitemsResponse> menuItems;
+    private List<MenuItemsResponse> menuItems;
 
 
 

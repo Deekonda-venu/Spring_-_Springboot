@@ -1,5 +1,7 @@
 package com.example.Resturant.Respose;
 
+import lombok.Data;
+
 @Data
 public class MenuItemsResponse {
 

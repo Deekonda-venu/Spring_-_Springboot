@@ -1,6 +1,7 @@
 package com.example.Resturant.Controller;
 
 import com.example.Resturant.Model.ResturantDetails;
+import com.example.Resturant.Respose.ResturantResponse;
 import com.example.Resturant.Service.Resturentservice;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -34,11 +35,8 @@ public class ResturantController {
     }
 
     @GetMapping("/GetResturnentdetailsById/{id}")
-    public ResponseEntity<ResturantDetails> getResturentDetailsById(@PathVariable Long id) {
-        return ResponseEntity.ok(
-                resturentservice.getMenuItemsByResturant(id)
-                        .orElseThrow(() -> new RuntimeException("Resturant not found with id: " + id))
-        );
+    public ResponseEntity<ResturantResponse> getResturentDetailsById(@PathVariable Long id) {
+        return ResponseEntity.ok(resturentservice.getMenuItemsByResturant(id));
     }
 
     @PutMapping("/UpdateResturnentDetailsByID/{id}")

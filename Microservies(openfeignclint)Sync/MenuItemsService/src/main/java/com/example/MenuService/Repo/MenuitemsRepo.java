@@ -1,5 +1,5 @@
 package com.example.MenuService.Repo;
-
+import java.util.List;
 import com.example.MenuService.Model.MenuItems;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

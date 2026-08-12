@@ -100,7 +100,7 @@ public class MenuitemsService {
         }
         return menuitemsRepo.findByResturantId(resturantId);
     }
-    public List<Menuitems> getMenuItemsByResturant(Long resturantId){
+    public List<MenuItems> getMenuItemsByResturant(Long resturantId){
         return menuitemsRepo.findByResturantId(resturantId);
     }
 }
