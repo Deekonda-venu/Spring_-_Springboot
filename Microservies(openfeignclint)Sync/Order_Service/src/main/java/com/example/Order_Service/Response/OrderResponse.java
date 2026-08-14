@@ -5,17 +5,18 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
-@JsonPropertyOrder({"id", "customerId", "restaurantId", "deliveryAddressId", "status", "subtotal", "tax", "deliveryFee", "totalAmount", "paymentStatus", "createdAt", "updatedAt"})
+@JsonPropertyOrder({"id", "customerresponse", "resturantresponse", "addressresponse", "items", "status", "subtotal", "tax", "deliveryFee", "totalAmount", "paymentStatus", "createdAt", "updatedAt"})
 public class OrderResponse {
 
     private Long id;
-    private Long customerId;
-    private Long restaurantId;
-    private Long deliveryAddressId;
+    private CustomerResponse customerresponse;
+    private ResturantResponse resturantresponse;
+    private AddressRespose addressresponse;      // class is spelled "AddressRespose"
+    private List<MenuitemsResponse> items;       // class is spelled "MenuitemsResponse"
     private String status;
-    private List<MenuItemResponse> items;
     private BigDecimal subtotal;
     private BigDecimal tax;
     private BigDecimal deliveryFee;
