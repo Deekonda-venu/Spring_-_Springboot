@@ -7,4 +7,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/API/Order/v1")
 public class OrderController {
 
+    @Autowired
+    private OrderService orderService;
+
+
+
 }
