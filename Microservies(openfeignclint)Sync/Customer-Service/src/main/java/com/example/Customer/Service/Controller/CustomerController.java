@@ -37,6 +37,12 @@ public class CustomerController {
     public CustomerResponse getCustomerDetailsById(@PathVariable("customer_id") Long id){
         return customerService.getCustomerDetailsById(id);
     }
+    @GetMapping("/GetCustomerDetailsById/{customer_id}/Addresses/{address_id}")
+    public AddressResponse getAddressByCustomerAndAddressId(
+            @PathVariable("customer_id") Long customerId,
+            @PathVariable("address_id") Long addressId){
+        return customerService.getAddressByCustomerAndAddressId(customerId, addressId);
+    }
 
     @PutMapping("/UpdateFullCustomerDetails/{id}")
     public CustomerDetails updateFullCustomerDetails(@PathVariable Long id, @RequestBody CustomerDetails customerDetails){

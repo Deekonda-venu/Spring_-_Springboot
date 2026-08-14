@@ -15,6 +15,7 @@ public class OrderResponse {
     private Long restaurantId;
     private Long deliveryAddressId;
     private String status;
+    private List<MenuItemResponse> items;
     private BigDecimal subtotal;
     private BigDecimal tax;
     private BigDecimal deliveryFee;

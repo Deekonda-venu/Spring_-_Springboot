@@ -76,6 +76,23 @@ public class CustomerService {
                 .orElseThrow(() -> new RuntimeException("Address not found with id: " + Address_id));
         addressRespositary.delete(addressdetails);
     }
+    public AddressResponse getAddressByCustomerAndAddressId(Long customerId, Long addressId){
+        AddressDetails address = addressRespositary.findById(addressId)
+                .orElseThrow(() -> new RuntimeException("Address not found with id: " + addressId));
+
+        if (!address.getCustomerId().equals(customerId)) {
+            throw new RuntimeException("Address " + addressId + " does not belong to customer " + customerId);
+        }
+
+        return new AddressResponse(
+                address.getId(),
+                address.getAddressLine1(),
+                address.getAddressLine2(),
+                address.getCity(),
+                address.getState(),
+                address.getPostalCode(),
+                address.getAddressType());
+    }
 
 
 }
