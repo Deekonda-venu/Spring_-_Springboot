@@ -81,10 +81,9 @@ public class OrderService {
 
         // 7. build response
         OrderResponse resp = new OrderResponse();
-        resp.setId(saved.getId());
-        resp.setCustomerresponse(customerResponse);
-        resp.setResturantresponse(resturantResponse);
-        resp.setAddressresponse(addressResponse);
+        resp.setOrderId(saved.getId());
+        resp.setCustomerDetails(customerResponse);
+        resp.setRestaurantDetails(resturantResponse);
         resp.setItems(menuitems);
         resp.setStatus(saved.getStatus());
         resp.setSubtotal(subtotal);

@@ -8,13 +8,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
-@JsonPropertyOrder({"id", "customerresponse", "resturantresponse", "addressresponse", "items", "status", "subtotal", "tax", "deliveryFee", "totalAmount", "paymentStatus", "createdAt", "updatedAt"})
+@JsonPropertyOrder({"orderId", "customerDetails", "restaurantDetails", "items", "status", "subtotal", "tax", "deliveryFee", "totalAmount", "paymentStatus", "createdAt", "updatedAt"})
 public class OrderResponse {
 
-    private Long id;
-    private CustomerResponse customerresponse;
-    private ResturantResponse resturantresponse;
-    private AddressRespose addressresponse;      // class is spelled "AddressRespose"
+    private Long orderId;
+    private CustomerResponse customerDetails;
+    private ResturantResponse restaurantDetails;
     private List<MenuitemsResponse> items;       // class is spelled "MenuitemsResponse"
     private String status;
     private BigDecimal subtotal;

@@ -1,6 +1,8 @@
 package com.example.Order_Service.Response;
-
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import lombok.Data;
 @Data
+@JsonPropertyOrder({"id", "addressLine1", "addressLine2", "city", "state", "postalCode", "addressType"})
 public class AddressRespose {
 
     private Long id;

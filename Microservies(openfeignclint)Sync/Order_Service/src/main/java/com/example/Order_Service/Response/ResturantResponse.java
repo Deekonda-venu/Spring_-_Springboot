@@ -1,6 +1,8 @@
 package com.example.Order_Service.Response;
-
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import lombok.Data;
 @Data
+@JsonPropertyOrder({"id", "resturantName", "description", "phone", "email", "status"})
 public class ResturantResponse {
 
     private Long id;
@@ -12,7 +14,7 @@ public class ResturantResponse {
 //    private String city;
 //    private LocalTime openingTime;
 //    private LocalTime closingTime;
-    private ResturantStatus status;
+    private String status;
 //    private LocalDateTime createdAt;
 //    private LocalDateTime updatedAt;
 
