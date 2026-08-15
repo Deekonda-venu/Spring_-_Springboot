@@ -6,6 +6,7 @@ import com.example.Order_Service.Clinet.ResturnatClinet;
 import com.example.Order_Service.Model.OrderDetails;
 import com.example.Order_Service.Model.OrderItems;
 import com.example.Order_Service.Repositary.OrderDetailesRepo;
+import com.example.Order_Service.Repositary.OrderitemsRepo;
 import com.example.Order_Service.Response.AddressRespose;
 import com.example.Order_Service.Response.CustomerResponse;
 import com.example.Order_Service.Response.MenuitemsResponse;
@@ -25,6 +26,8 @@ public class OrderService {
 
     @Autowired
     private OrderDetailesRepo orderDetailesRepo;
+    @Autowired
+    private OrderitemsRepo orderitemsRepo;
     @Autowired
     private ResturnatClinet resturnatClinet;
     @Autowired
@@ -79,6 +82,12 @@ public class OrderService {
         orderDetails.setUpdatedAt(LocalDateTime.now());
         OrderDetails saved = orderDetailesRepo.save(orderDetails);
 
+        // 6b. persist order items
+        for (OrderItems item : orderDetails.getItems()) {
+            item.setOrderId(saved.getId());
+            orderitemsRepo.save(item);
+        }
+
         // 7. build response
         OrderResponse resp = new OrderResponse();
         resp.setOrderId(saved.getId());
@@ -93,6 +102,46 @@ public class OrderService {
         resp.setPaymentStatus(saved.getPaymentStatus());
         resp.setCreatedAt(saved.getCreatedAt());
         resp.setUpdatedAt(saved.getUpdatedAt());
+        return resp;
+    }
+    public OrderResponse getOrderById(Long orderId) {
+        OrderDetails orderDetails = orderDetailesRepo.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+        orderDetails.setItems(orderitemsRepo.findByOrderId(orderId));
+        return createOrderResponse(orderDetails);
+    }
+
+    private OrderResponse createOrderResponse(OrderDetails orderDetails) {
+        CustomerResponse customerResponse =
+                customerClinet.getCustomerById(orderDetails.getCustomerId());
+
+        AddressRespose addressResponse = customerClinet.getAddressByCustomerAndAddressId(
+                orderDetails.getCustomerId(), orderDetails.getDeliveryAddressId());
+        customerResponse.setAddress(addressResponse);
+
+        ResturantResponse resturantResponse =
+                resturnatClinet.getResturentDetailsById(orderDetails.getRestaurantId());
+
+        List<MenuitemsResponse> menuitems = new ArrayList<>();
+        if (orderDetails.getItems() != null) {
+            for (OrderItems orderItem : orderDetails.getItems()) {
+                menuitems.add(menuitemsclinet.getMenuitemById(orderItem.getMenuItemId()));
+            }
+        }
+
+        OrderResponse resp = new OrderResponse();
+        resp.setOrderId(orderDetails.getId());
+        resp.setCustomerDetails(customerResponse);
+        resp.setRestaurantDetails(resturantResponse);
+        resp.setItems(menuitems);
+        resp.setStatus(orderDetails.getStatus());
+        resp.setSubtotal(orderDetails.getSubtotal());
+        resp.setTax(orderDetails.getTax());
+        resp.setDeliveryFee(orderDetails.getDeliveryFee());
+        resp.setTotalAmount(orderDetails.getTotalAmount());
+        resp.setPaymentStatus(orderDetails.getPaymentStatus());
+        resp.setCreatedAt(orderDetails.getCreatedAt());
+        resp.setUpdatedAt(orderDetails.getUpdatedAt());
         return resp;
     }
 }

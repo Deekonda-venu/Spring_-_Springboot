@@ -8,7 +8,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 @RestController
 @RequestMapping("/API/Order/v1")
 public class OrderController {
@@ -19,5 +20,9 @@ public class OrderController {
     @PostMapping("/CreateOrder")
     public OrderResponse createOrder(@RequestBody OrderDetails orderDetails) {
         return orderService.createOrder(orderDetails);
+    }
+    @GetMapping("/GetOrderById/{OrderId}")
+    public OrderResponse getOrderById(@PathVariable("OrderId") Long orderId) {
+        return orderService.getOrderById(orderId);
     }
 }
