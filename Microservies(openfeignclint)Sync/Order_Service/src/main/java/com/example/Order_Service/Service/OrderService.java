@@ -1,5 +1,9 @@
 package com.example.Order_Service.Service;
 
+import com.example.Order_Service.Response.CustomerByiDResponse;
+import com.example.Order_Service.Response.OrderdetailsforCustomer;
+import com.example.Order_Service.Response.ResturantByidResponse;
+import com.example.Order_Service.Response.OrderdetailsByResturantIdRespose;
 import com.example.Order_Service.Clinet.CustomerClinet;
 import com.example.Order_Service.Clinet.Menuitemsclinet;
 import com.example.Order_Service.Clinet.ResturnatClinet;
@@ -144,4 +148,88 @@ public class OrderService {
         resp.setUpdatedAt(orderDetails.getUpdatedAt());
         return resp;
     }
+    public List<OrderResponse> getallorder(){
+        List<OrderDetails> orders = orderDetailesRepo.findAll();
+        List<OrderResponse> responses = new ArrayList<>();
+        for (OrderDetails order : orders) {
+            order.setItems(orderitemsRepo.findByOrderId(order.getId()));
+            responses.add(createOrderResponse(order));
+        }
+        return responses;
+    }
+    public OrderResponse updateOrderStatus(Long id, String status){
+        OrderDetails orderDetails = orderDetailesRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+        orderDetails.setStatus(status);
+        orderDetails.setUpdatedAt(LocalDateTime.now());
+        OrderDetails saved = orderDetailesRepo.save(orderDetails);
+        saved.setItems(orderitemsRepo.findByOrderId(saved.getId()));
+        return createOrderResponse(saved);
+    }
+    public CustomerByiDResponse getAllOrdersByCustomerId(Long customerId){
+        CustomerByiDResponse customerResponse = new CustomerByiDResponse();
+        customerResponse.setCustomerid(customerId);
+
+        List<OrderDetails> orders = orderDetailesRepo.findByCustomerId(customerId);
+        List<OrderdetailsforCustomer> orderList = new ArrayList<>();
+        for (OrderDetails order : orders) {
+            OrderdetailsforCustomer dto = new OrderdetailsforCustomer();
+            dto.setOrderid(order.getId());
+            dto.setResturantid(order.getRestaurantId());
+            dto.setStatus(order.getStatus());
+            dto.setPaymentstatus(order.getPaymentStatus());
+            dto.setTotalamount(order.getTotalAmount());
+            dto.setCreatedAt(order.getCreatedAt() != null ? order.getCreatedAt().toString() : null);
+            orderList.add(dto);
+        }
+        customerResponse.setOrders(orderList);
+        return customerResponse;
+    }
+    public ResturantByidResponse getAllOrdersByResturant(Long resturantId){
+        ResturantByidResponse resturantResponse = new ResturantByidResponse();
+        resturantResponse.setResturantid(resturantId);
+
+        List<OrderDetails> orders = orderDetailesRepo.findByRestaurantId(resturantId);
+        List<OrderdetailsByResturantIdRespose> orderList = new ArrayList<>();
+        for (OrderDetails order : orders) {
+            OrderdetailsByResturantIdRespose dto = new OrderdetailsByResturantIdRespose();
+            dto.setOrderid(order.getId());
+            dto.setCustomerid(order.getCustomerId());
+            dto.setStatus(order.getStatus());
+            dto.setPaymentstatus(order.getPaymentStatus());
+            dto.setTotalamount(order.getTotalAmount());
+            dto.setCreatedAt(order.getCreatedAt() != null ? order.getCreatedAt().toString() : null);
+            orderList.add(dto);
+        }
+        resturantResponse.setOrders(orderList);
+        return resturantResponse;
+    }
+
+    public OrderResponse cancelOrder(Long orderId) {
+        OrderDetails orderDetails = orderDetailesRepo.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        if ("DELIVERED".equalsIgnoreCase(orderDetails.getStatus())
+                || "CANCELLED".equalsIgnoreCase(orderDetails.getStatus())) {
+            throw new RuntimeException("Order cannot be cancelled in status: " + orderDetails.getStatus());
+        }
+
+        orderDetails.setStatus("CANCELLED");
+        orderDetails.setUpdatedAt(LocalDateTime.now());
+        OrderDetails saved = orderDetailesRepo.save(orderDetails);
+        saved.setItems(orderitemsRepo.findByOrderId(saved.getId()));
+        return createOrderResponse(saved);
+    }
+
+    public OrderStatusResponse getOrderStatus(Long orderId) {
+        OrderDetails orderDetails = orderDetailesRepo.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        OrderStatusResponse response = new OrderStatusResponse();
+        response.setOrderId(orderDetails.getId());
+        response.setStatus(orderDetails.getStatus());
+        response.setUpdatedAt(orderDetails.getUpdatedAt());
+        return response;
+    }
+
 }
