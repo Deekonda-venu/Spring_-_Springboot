@@ -469,3 +469,181 @@ Notification and Delivery services do the same but with **different `group-id`s*
 Java 21 · Spring Boot 3.x · Spring Web · Spring Data JPA · Spring Validation · Spring Cloud OpenFeign · Spring Cloud Gateway · Apache Kafka · PostgreSQL · Docker / Docker Compose · Swagger/OpenAPI · Resilience4j · JUnit 5 · Mockito · Testcontainers.
 
 > You currently run **MySQL + Java 17**. That's perfectly fine to continue; migrate to PostgreSQL/Java 21 only if you specifically want to match the target stack. Keep **one database per service** either way.
+
+---
+
+# PART D — MongoDB for the Kafka Services (Beginner Roadmap)
+
+> Note: the technology is **MongoDB** (often nicknamed "Mongo"). "Mango" = MongoDB. 🙂
+
+## Why use MongoDB for the event-driven services?
+
+Your Kafka consumers (**Kitchen**, **Notification**, **Delivery**) mostly **store event data and status history**. That data is flexible and document-shaped, so MongoDB is a natural fit:
+
+- Events arrive as JSON → MongoDB stores JSON-like **documents** directly (no rigid schema / no table migrations).
+- Great for append-heavy, "log this event" workloads like notifications.
+- Easy to evolve fields as your events grow.
+
+You can keep **MySQL for the sync services** (Customer, Restaurant, Menu, Order, Payment) and use **MongoDB for the async services**. That's a realistic polyglot-persistence setup — still **one database per service**.
+
+## MongoDB in 60 seconds (vs SQL you already know)
+
+| SQL (MySQL) | MongoDB | Meaning |
+|---|---|---|
+| Database | Database | Same concept |
+| Table | **Collection** | A group of records |
+| Row | **Document** | One record, stored as BSON/JSON |
+| Column | **Field** | A key in the document |
+| Primary key `id` | `_id` (`ObjectId` or your own) | Unique identifier |
+| `JOIN` | Usually **embed** data or reference by id | Mongo prefers denormalization |
+| SQL query | Query by JSON filter, e.g. `{ "orderId": 10001 }` | No SQL language |
+
+Key idea: **no fixed schema**. Two documents in the same collection can have different fields. You model data the way your app reads it.
+
+## Step 1 — Run MongoDB locally (Docker)
+
+Add to your `docker-compose-kafka.yml` (or a separate compose file):
+```yaml
+  mongodb:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    volumes:
+      - mongo_data:/data/db
+
+  mongo-express:            # optional web UI at http://localhost:8091
+    image: mongo-express:latest
+    depends_on: [mongodb]
+    ports:
+      - "8091:8081"
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: root
+      ME_CONFIG_MONGODB_URL: mongodb://root:root@mongodb:27017/
+
+volumes:
+  mongo_data:
+```
+Start it:
+```bash
+docker compose -f docker-compose-kafka.yml up -d
+```
+
+## Step 2 — Add the Spring Data MongoDB dependency
+
+In each Mongo-backed service's `pom.xml` (Kitchen / Notification / Delivery) — **replace** the JPA/MySQL deps with:
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-mongodb</artifactId>
+</dependency>
+```
+(Keep `spring-kafka` — these services still consume Kafka.)
+
+## Step 3 — Configure the connection (`application.properties`)
+
+Each service gets its **own database name** (one DB per service):
+```properties
+# Kitchen Service example
+spring.data.mongodb.uri=mongodb://root:root@localhost:27017/kitchen_db?authSource=admin
+```
+Notification → `notification_db`, Delivery → `delivery_db`.
+
+## Step 4 — Model a document (vs a JPA entity)
+
+```java
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import lombok.Data;
+import java.time.LocalDateTime;
+
+@Document(collection = "kitchen_orders")   // like @Table
+@Data
+public class KitchenOrder {
+
+    @Id
+    private String id;            // Mongo _id (String/ObjectId), not auto-increment Long
+
+    private Long orderId;
+    private Long restaurantId;
+    private String status;        // RECEIVED | PREPARING | READY
+    private LocalDateTime receivedAt;
+    private LocalDateTime startedAt;
+    private LocalDateTime readyAt;
+}
+```
+
+## Step 5 — Repository (almost identical to JPA)
+
+```java
+import org.springframework.data.mongodb.repository.MongoRepository;
+import java.util.List;
+import java.util.Optional;
+
+public interface KitchenOrderRepo extends MongoRepository<KitchenOrder, String> {
+    Optional<KitchenOrder> findByOrderId(Long orderId);
+    List<KitchenOrder> findByStatus(String status);
+}
+```
+Same derived-query method names you already use with JPA — Spring Data works the same way.
+
+## Step 6 — Use it inside a Kafka consumer
+
+```java
+@Component
+public class KitchenEventConsumer {
+
+    @Autowired
+    private KitchenOrderRepo kitchenOrderRepo;
+
+    @KafkaListener(topics = "order-events", groupId = "kitchen-service")
+    public void onOrderPlaced(OrderPlacedEvent event) {
+        KitchenOrder ticket = new KitchenOrder();
+        ticket.setOrderId(event.getOrderId());
+        ticket.setRestaurantId(event.getRestaurantId());
+        ticket.setStatus("RECEIVED");
+        ticket.setReceivedAt(java.time.LocalDateTime.now());
+        kitchenOrderRepo.save(ticket);      // stored as a document in kitchen_db.kitchen_orders
+    }
+}
+```
+
+## Step 7 — Inspect data (Mongo shell)
+
+```bash
+docker exec -it <mongo_container> mongosh -u root -p root --authenticationDatabase admin
+```
+```javascript
+use kitchen_db
+db.kitchen_orders.find().pretty()
+db.kitchen_orders.find({ orderId: 10001 })
+db.kitchen_orders.updateOne({ orderId: 10001 }, { $set: { status: "PREPARING" } })
+```
+Or use **mongo-express** UI at http://localhost:8091.
+
+## Recommended MongoDB + Kafka roadmap
+
+1. **M1 — Learn basics**: run Mongo in Docker, open mongo-express, manually `insert`/`find`/`update` a few documents to get comfortable with collections vs documents.
+2. **M2 — Kitchen Service (first Mongo + Kafka service)**:
+   - `spring-boot-starter-data-mongodb` + `spring-kafka`.
+   - `@Document KitchenOrder`, `KitchenOrderRepo`.
+   - `@KafkaListener` on `order-events` → save `RECEIVED` ticket.
+   - REST `PATCH /api/kitchen/orders/{orderId}/status` to move `RECEIVED → PREPARING → READY`.
+   - On `READY`, **publish** `ORDER_READY` to Kafka.
+3. **M3 — Notification Service**: consume multiple events; store `notifications` documents (or console-only first).
+4. **M4 — Delivery Service**: consume `ORDER_READY`; manage delivery lifecycle documents; publish `ORDER_DELIVERED`.
+5. **M5 — Polish**: indexes on `orderId`, error handling, and (optional) TTL on old notifications.
+
+## Beginner gotchas
+
+- **`_id` is a String/ObjectId**, not a numeric auto-increment. Keep your business key (e.g. `orderId`) as a separate field.
+- **No JOINs** — store what you need in the document, or look up other services via Feign/events.
+- **No schema migrations** — but be consistent in code; add an **index** on frequently queried fields:
+  ```java
+  @Indexed private Long orderId;   // from org.springframework.data.mongodb.core.index.Indexed
+  ```
+- **Don't mix** `spring-boot-starter-data-jpa` and `spring-boot-starter-data-mongodb` in the same service unless you really need both — it confuses auto-config for beginners.
+- Keep **one Mongo database per service** (`kitchen_db`, `notification_db`, `delivery_db`).
